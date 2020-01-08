@@ -18,6 +18,7 @@
   * <a href="#AveragePool">AveragePool</a>
   * <a href="#BatchNormalization">BatchNormalization</a>
   * <a href="#BitShift">BitShift</a>
+  * <a href="#CDist">CDist</a>
   * <a href="#Cast">Cast</a>
   * <a href="#Ceil">Ceil</a>
   * <a href="#Clip">Clip</a>
@@ -2144,6 +2145,95 @@ y = np.array([1, 2, 3]).astype(np.uint8)
 z = x >> y  # expected output [8, 1, 0]
 expect(node, inputs=[x, y], outputs=[z],
        name='test_bitshift_right_uint8')
+```
+
+</details>
+
+
+### <a name="CDist"></a><a name="cdist">**CDist**</a>
+
+  Compute pair-wise distances between two 2D tensors
+  sharing the same number of columns. The output
+  is a 2D symmetric float matrix.
+  
+  Example:
+  ```
+  input_x = [[1, 2, 3], [4, 5, 6]]
+  input_y = [[7, 8, 9]]
+  metric = 'sqeuclidean'
+  output = [[108], [27]]
+  ```
+
+#### Version
+
+This version of the operator has been available since version 12 of the default ONNX operator set.
+
+#### Attributes
+
+<dl>
+<dt><tt>metric</tt> : string (default is euclidean)</dt>
+<dd>Metric to use to compute distances, it can be euclidean, sqeuclidean, manhattan, minkowski.</dd>
+<dt><tt>p</tt> : int (default is 2)</dt>
+<dd>Power for Minkowski metric.</dd>
+</dl>
+
+#### Inputs
+
+<dl>
+<dt><tt>X</tt> : T</dt>
+<dd>Input tensor X. Shape of X should be (M, K).</dd>
+<dt><tt>Y</tt> : T</dt>
+<dd>Input tensor B. Shape of Y should be (N, K).</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>Z</tt> : T</dt>
+<dd>Output tensor of shape (M, N).</dd>
+</dl>
+
+#### Type Constraints
+
+<dl>
+<dt><tt>T</tt> : tensor(float16), tensor(float), tensor(double)</dt>
+<dd>Constrain input and output types to float tensors.</dd>
+</dl>
+
+
+#### Examples
+
+<details>
+<summary>cdist</summary>
+
+```python
+for metric in ['sqeuclidean', 'euclidean', 'manhattan', 'minkowski']:
+    node = onnx.helper.make_node(
+        'CDist',
+        inputs=['x', 'y'],
+        outputs=['z'],
+        metric=metric,
+    )
+    x = np.array([[1, 2, 3], [4, 5, 6]]).astype(np.float32)
+    y = np.array([[7, 8, 9]]).astype(np.float32)
+    z = np_cdist(x, y, metric)  # expected output [[108.], [27.]] for sqeuclidean
+    expect(node, inputs=[x, y], outputs=[z],
+           name='test_cdist_%s_example' % metric)
+
+for metric in ['minkowski']:
+    for p in [3]:
+        node = onnx.helper.make_node(
+            'CDist',
+            inputs=['x', 'y'],
+            outputs=['z'],
+            metric=metric,
+            p=p,
+        )
+        x = np.array([[1, 2, 3], [4, 5, 6]]).astype(np.float32)
+        y = np.array([[7, 8, 9]]).astype(np.float32)
+        z = np_cdist(x, y, metric)
+        expect(node, inputs=[x, y], outputs=[z],
+               name='test_cdist_%s_%d_dexample' % (metric, p))
 ```
 
 </details>
@@ -8192,14 +8282,14 @@ expect(node, inputs=[data_0, data_1], outputs=[result],
    ```
    pad_shape[i] = (output_spatial_shape[i] - 1) * strides_spatial_shape[i] + ((kernel_spatial_shape[i] - 1) * dilations[i] + 1) - input_spatial_shape[i]
    ```
-   The output of each pooling window is maximum number of elements exclude pad.
+   The output of each pooling window is maximum number of elements exclude pad. 
    
 
 #### Version
 
-This version of the operator has been available since version 11 of the default ONNX operator set.
+This version of the operator has been available since version 12 of the default ONNX operator set.
 
-Other versions of this operator: <a href="Changelog.md#MaxPool-1">MaxPool-1</a>, <a href="Changelog.md#MaxPool-8">MaxPool-8</a>, <a href="Changelog.md#MaxPool-10">MaxPool-10</a>
+Other versions of this operator: <a href="Changelog.md#MaxPool-1">MaxPool-1</a>, <a href="Changelog.md#MaxPool-8">MaxPool-8</a>, <a href="Changelog.md#MaxPool-10">MaxPool-10</a>, <a href="Changelog.md#MaxPool-11">MaxPool-11</a>
 
 #### Attributes
 
@@ -8239,8 +8329,8 @@ Other versions of this operator: <a href="Changelog.md#MaxPool-1">MaxPool-1</a>,
 #### Type Constraints
 
 <dl>
-<dt><tt>T</tt> : tensor(float16), tensor(float), tensor(double)</dt>
-<dd>Constrain input and output types to float tensors.</dd>
+<dt><tt>T</tt> : tensor(float16), tensor(float), tensor(double), tensor(int8), tensor(uint8)</dt>
+<dd>Constrain input and output types to float and 8 bit tensors.</dd>
 <dt><tt>I</tt> : tensor(int64)</dt>
 <dd>Constrain index tensor to int64</dd>
 </dl>
@@ -8599,6 +8689,42 @@ padded = x
 y = pool(padded, x_shape, kernel_shape, strides, out_shape, (0, 0), 'MAX')
 
 expect(node, inputs=[x], outputs=[y], name='test_maxpool_2d_strides')
+```
+
+</details>
+
+
+<details>
+<summary>maxpool_2d_uint8</summary>
+
+```python
+"""
+input_shape: [1, 1, 5, 5]
+output_shape: [1, 1, 5, 5]
+pad_shape: [4, 4] -> [2, 2, 2, 2] by axis
+"""
+node = onnx.helper.make_node(
+    'MaxPool',
+    inputs=['x'],
+    outputs=['y'],
+    kernel_shape=[5, 5],
+    pads=[2, 2, 2, 2]
+)
+x = np.array([[[
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20],
+    [21, 22, 23, 24, 25],
+]]]).astype(np.uint8)
+y = np.array([[[
+    [13, 14, 15, 15, 15],
+    [18, 19, 20, 20, 20],
+    [23, 24, 25, 25, 25],
+    [23, 24, 25, 25, 25],
+    [23, 24, 25, 25, 25]]]]).astype(np.uint8)
+
+expect(node, inputs=[x], outputs=[y], name='test_maxpool_2d_uint8')
 ```
 
 </details>
@@ -12332,9 +12458,9 @@ expect(node, inputs=[data], outputs=[reduced],
 
 #### Version
 
-This version of the operator has been available since version 11 of the default ONNX operator set.
+This version of the operator has been available since version 12 of the default ONNX operator set.
 
-Other versions of this operator: <a href="Changelog.md#ReduceMax-1">ReduceMax-1</a>
+Other versions of this operator: <a href="Changelog.md#ReduceMax-1">ReduceMax-1</a>, <a href="Changelog.md#ReduceMax-11">ReduceMax-11</a>
 
 #### Attributes
 
@@ -12362,8 +12488,8 @@ Other versions of this operator: <a href="Changelog.md#ReduceMax-1">ReduceMax-1<
 #### Type Constraints
 
 <dl>
-<dt><tt>T</tt> : tensor(uint32), tensor(uint64), tensor(int32), tensor(int64), tensor(float16), tensor(float), tensor(double)</dt>
-<dd>Constrain input and output types to high-precision numeric tensors.</dd>
+<dt><tt>T</tt> : tensor(uint32), tensor(uint64), tensor(int32), tensor(int64), tensor(float16), tensor(float), tensor(double), tensor(uint8), tensor(int8)</dt>
+<dd>Constrain input and output types to high-precision and 8 bit numeric tensors.</dd>
 </dl>
 
 
@@ -12693,9 +12819,9 @@ expect(node, inputs=[data], outputs=[reduced], name='test_reduce_mean_negative_a
 
 #### Version
 
-This version of the operator has been available since version 11 of the default ONNX operator set.
+This version of the operator has been available since version 12 of the default ONNX operator set.
 
-Other versions of this operator: <a href="Changelog.md#ReduceMin-1">ReduceMin-1</a>
+Other versions of this operator: <a href="Changelog.md#ReduceMin-1">ReduceMin-1</a>, <a href="Changelog.md#ReduceMin-11">ReduceMin-11</a>
 
 #### Attributes
 
@@ -12723,8 +12849,8 @@ Other versions of this operator: <a href="Changelog.md#ReduceMin-1">ReduceMin-1<
 #### Type Constraints
 
 <dl>
-<dt><tt>T</tt> : tensor(uint32), tensor(uint64), tensor(int32), tensor(int64), tensor(float16), tensor(float), tensor(double)</dt>
-<dd>Constrain input and output types to high-precision numeric tensors.</dd>
+<dt><tt>T</tt> : tensor(uint32), tensor(uint64), tensor(int32), tensor(int64), tensor(float16), tensor(float), tensor(double), tensor(uint8), tensor(int8)</dt>
+<dd>Constrain input and output types to high-precision and 8 bit numeric tensors.</dd>
 </dl>
 
 
