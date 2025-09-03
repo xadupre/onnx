@@ -104,16 +104,6 @@ jobs:
           python --version
           cmake --version
 
-      - name: Install external protobuf - Linux
-        if: matrix.protobuf_type == 'External' && startsWith(matrix.os,'ubuntu')
-        run: |
-          sudo apt-get install libprotobuf-dev protobuf-compiler
-
-      - name: Install external protobuf - MacOS
-        if: matrix.protobuf_type == 'External' && matrix.os == 'macos-latest'
-        run: |
-          source workflow_scripts/protobuf/build_protobuf_unix.sh 3 $(pwd)/protobuf/protobuf_install
-
       - name: Set up MSBuild (arm64)
         if: startsWith(matrix.os,'windows-11-arm')
         uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2.0.0
@@ -126,17 +116,6 @@ jobs:
         with:
           msbuild-architecture: x64
 
-      - name: Install external protobuf - Windows
-        if: matrix.protobuf_type == 'External' && startsWith(matrix.os, 'windows')
-        run: |
-          if ($matrix.os -like "windows-11-arm*") {
-              $cmake_arch = "ARM64"
-          } else {
-              $cmake_arch = "x64"
-          }
-
-          workflow_scripts/protobuf/build_protobuf_win.ps1 -cmake_arch $cmake_arch
-
       - name: Build and install ONNX - Linux
         if: startsWith(matrix.os,'ubuntu')
         run: |
@@ -146,7 +125,7 @@ jobs:
           fi
         
           if [ "${{ matrix.protobuf_type }}" == "External" ]; then
-            export CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DONNX_USE_PROTOBUF_SHARED_LIBS=ON"
+            export CMAKE_ARGS="$CMAKE_ARGS"
           fi
           pip install -e ".[reference]" -v
         env:
@@ -173,7 +152,7 @@ jobs:
           DEBUG: ${{ matrix.debug_build }}
           ONNX_ML: ${{ matrix.onnx_ml }}
           ONNX_BUILD_TESTS: 1
-          CMAKE_ARGS: "-DONNX_WERROR=ON -DONNX_USE_PROTOBUF_SHARED_LIBS=OFF -DONNX_USE_LITE_PROTO=ON -DONNX_USE_UNITY_BUILD=${{ matrix.unity_build }}"
+          CMAKE_ARGS: "-DONNX_WERROR=ON -DONNX_USE_UNITY_BUILD=${{ matrix.unity_build }}"
 
       - name: pip freeze
         run: |

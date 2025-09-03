@@ -21,7 +21,6 @@ assignees: ''
 - Python version:
 - GCC/Compiler version (if compiling from source):
 - CMake version:
-- Protobuf version:
 - Visual Studio version (if applicable):-->
 
 

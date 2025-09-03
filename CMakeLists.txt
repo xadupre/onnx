@@ -39,14 +39,10 @@ endif()
 
 
 option(ONNX_BUILD_PYTHON "Build Python binaries" OFF)
-option(ONNX_BUILD_CUSTOM_PROTOBUF "Build and use ONNX's own protobuf" OFF)
-option(ONNX_USE_PROTOBUF_SHARED_LIBS "Build ONNX using protobuf shared library." OFF)
-option(ONNX_GEN_PB_TYPE_STUBS "Generate protobuf python type stubs" ON)
 option(ONNX_WERROR "Build with Werror" OFF)
 option(ONNX_COVERAGE "Build with coverage instrumentation" OFF)
 option(ONNX_BUILD_TESTS "Build ONNX C++ APIs Tests" OFF)
 option(ONNX_USE_ASAN "Build ONNX with ASAN" OFF)
-option(ONNX_USE_LITE_PROTO "Use lite protobuf instead of full." OFF)
 option(ONNX_DISABLE_EXCEPTIONS "Disable exception handling." OFF)
 option(ONNX_DISABLE_STATIC_REGISTRATION "Disable static registration for ONNX operator schemas." OFF)
 option(ONNX_USE_UNITY_BUILD "Enable Unity (Jumbo) build for" OFF)
@@ -157,7 +153,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
   set(CMAKE_NO_SYSTEM_FROM_IMPORTED 1)
 endif()
 
-# Build the libraries with -fPIC including the protobuf lib.
+# Build the libraries with -fPIC
 if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -180,242 +176,6 @@ add_onnx_global_defines(lib_onnx2_cpp)
 message(STATUS "Setting ONNX2 done.")
 
 list(APPEND CMAKE_MODULE_PATH ${ONNX_ROOT}/cmake/external)
-if(NOT ONNX_BUILD_CUSTOM_PROTOBUF)
-  if((ONNX_USE_LITE_PROTO AND TARGET protobuf::libprotobuf-lite) OR ((NOT ONNX_USE_LITE_PROTO) AND TARGET protobuf::libprotobuf))
-    # Sometimes we need to use protoc compiled for host architecture while linking
-    # libprotobuf against target architecture. See https://github.com/caffe2/caffe
-    # 2/blob/96f35ad75480b25c1a23d6e9e97bccae9f7a7f9c/cmake/ProtoBuf.cmake#L92-L99
-    if(EXISTS "${ONNX_CUSTOM_PROTOC_EXECUTABLE}")
-      message(STATUS "Using custom protoc executable")
-      set(ONNX_PROTOC_EXECUTABLE ${ONNX_CUSTOM_PROTOC_EXECUTABLE})
-    else()
-      if(TARGET protobuf::protoc)
-        set(ONNX_PROTOC_EXECUTABLE $<TARGET_FILE:protobuf::protoc>)
-      endif()
-    endif()
-  else()
-    # Customized version of find Protobuf. We need to avoid situations mentioned
-    # in https://github.com/caffe2/caffe2/blob/b7d983f255ef5496474f1ea188edb5e0ac4
-    # 42761/cmake/ProtoBuf.cmake#L82-L92 The following section is stolen from
-    # cmake/ProtoBuf.cmake in Caffe2
-    find_program(Protobuf_PROTOC_EXECUTABLE
-                NAMES protoc
-                DOC "The Google Protocol Buffers Compiler")
-
-    # Only if protoc was found, seed the include directories and libraries. We
-    # assume that protoc is installed at PREFIX/bin. We use get_filename_component
-    # to resolve PREFIX.
-    if(Protobuf_PROTOC_EXECUTABLE)
-      set(ONNX_PROTOC_EXECUTABLE ${Protobuf_PROTOC_EXECUTABLE})
-      get_filename_component(_PROTOBUF_INSTALL_PREFIX
-                            ${Protobuf_PROTOC_EXECUTABLE} DIRECTORY)
-      get_filename_component(_PROTOBUF_INSTALL_PREFIX
-                            ${_PROTOBUF_INSTALL_PREFIX}/.. REALPATH)
-      find_library(Protobuf_PROTOC_LIBRARY
-                  NAMES protoc
-                  PATHS ${_PROTOBUF_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-                  NO_DEFAULT_PATH)
-      if(ONNX_USE_LITE_PROTO)
-        find_library(Protobuf_LITE_LIBRARY
-          NAMES protobuf-lite
-          PATHS ${_PROTOBUF_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-          NO_DEFAULT_PATH)
-      else()
-        find_library(Protobuf_LIBRARY
-          NAMES protobuf
-          PATHS ${_PROTOBUF_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}
-          NO_DEFAULT_PATH)
-      endif(ONNX_USE_LITE_PROTO)
-      find_path(Protobuf_INCLUDE_DIR google/protobuf/service.h
-                PATHS ${_PROTOBUF_INSTALL_PREFIX}/include
-                NO_DEFAULT_PATH)
-      if(ONNX_USE_PROTOBUF_SHARED_LIBS)
-        set(Protobuf_USE_STATIC_LIBS OFF)
-      else()
-        set(Protobuf_USE_STATIC_LIBS ON)
-      endif()
-      find_package(Protobuf)
-      if(Protobuf_FOUND)
-        set(PROTOBUF_DIR "${_PROTOBUF_INSTALL_PREFIX}")
-        set(Build_Protobuf OFF)
-        if("${Protobuf_VERSION}" VERSION_GREATER_EQUAL "4.22.0")
-          # There are extra dependencies for protobuf.
-          find_package(absl REQUIRED)
-          find_package(utf8_range)
-          message(STATUS "absl_VERSION: ${absl_VERSION}")
-          set(protobuf_ABSL_USED_TARGETS
-            absl::absl_check
-            absl::absl_log
-            absl::algorithm
-            absl::base
-            absl::bind_front
-            absl::bits
-            absl::btree
-            absl::cleanup
-            absl::cord
-            absl::core_headers
-            absl::debugging
-            absl::die_if_null
-            absl::dynamic_annotations
-            absl::flags
-            absl::flat_hash_map
-            absl::flat_hash_set
-            absl::function_ref
-            absl::hash
-            absl::layout
-            absl::log_initialize
-            absl::log_severity
-            absl::memory
-            absl::node_hash_map
-            absl::node_hash_set
-            absl::optional
-            absl::span
-            absl::status
-            absl::statusor
-            absl::strings
-            absl::synchronization
-            absl::time
-            absl::type_traits
-            absl::utility
-            absl::variant
-            utf8_range::utf8_range
-            utf8_range::utf8_validity
-          )
-        endif()
-      endif()
-    endif()
-  endif()
-endif()
-if(NOT ONNX_PROTOC_EXECUTABLE)
-    set(Build_Protobuf ON)
-    set(protobuf_MSVC_STATIC_RUNTIME ${ONNX_USE_MSVC_STATIC_RUNTIME})
-
-    include(FetchContent)
-    set(ABSL_PROPAGATE_CXX_STD 1)
-    set(ONNX_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-    set(ONNX_CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-    # Use this setting to build third-party libs.
-    set(BUILD_SHARED_LIBS ${ONNX_USE_PROTOBUF_SHARED_LIBS})
-    set(ProtobufURL https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protobuf-31.1.tar.gz)
-    set(ProtobufSHA1 da10aaa3bf779735a8a9acde1256a47ce5d148be)
-    FetchContent_Declare(
-      Protobuf
-      URL ${ProtobufURL}
-      URL_HASH SHA1=${ProtobufSHA1}
-    )
-    set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests" FORCE)
-    message(STATUS "Download and build Protobuf from ${ProtobufURL}")
-    FetchContent_MakeAvailable(Protobuf)
-    set(ONNX_PROTOC_EXECUTABLE $<TARGET_FILE:protobuf::protoc>)
-    set(Protobuf_VERSION "6.31.1")
-    # Change back the BUILD_SHARED_LIBS to control the onnx project.
-    set(BUILD_SHARED_LIBS ${ONNX_BUILD_SHARED_LIBS})
-    set(PROTOBUF_DIR "${protobuf_BINARY_DIR}")
-    set(CMAKE_CXX_FLAGS ${ONNX_CMAKE_CXX_FLAGS})
-endif()
-message(STATUS "ONNX_PROTOC_EXECUTABLE: ${ONNX_PROTOC_EXECUTABLE}")
-
-# function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS HDRS ROOT_DIR) from https://githu
-# b.com/tensorflow/tensorflow/blob/d2c3b873c6f8ff999a2e4ee707a84ff00d9c15a5/tens
-# orflow/contrib/cmake/tf_core_framework.cmake to solve the problem that
-# customized dir can't be specified when calling PROTOBUF_GENERATE_CPP.
-function(RELATIVE_PROTOBUF_GENERATE_CPP SRCS)
-  if(NOT ARGN)
-    message(
-      SEND_ERROR
-        "Error: RELATIVE_PROTOBUF_GENERATE_CPP() called without any proto files"
-      )
-    return()
-  endif()
-
-  set(${SRCS})
-
-  set(GEN_PROTO_PY "${ONNX_ROOT}/onnx/gen_proto.py")
-  set(GENERATED_FILES)
-  foreach(INFILE ${ARGN})
-    set(ABS_FILE "${ONNX_ROOT}/${INFILE}")
-    get_filename_component(FILE_DIR ${ABS_FILE} DIRECTORY)
-    get_filename_component(FILE_WE ${INFILE} NAME_WE)
-    # "onnx-data" check is because we do not want to create/compile an "onnx-data-ml.proto" file
-    if(ONNX_ML AND NOT(FILE_WE STREQUAL "onnx-data"))
-      if(ONNX_NAMESPACE STREQUAL "onnx")
-        set(GENERATED_FILE_WE "${FILE_WE}-ml")
-      else()
-        set(GENERATED_FILE_WE "${FILE_WE}_${ONNX_NAMESPACE}-ml")
-      endif()
-    else()
-      if(ONNX_NAMESPACE STREQUAL "onnx")
-        set(GENERATED_FILE_WE "${FILE_WE}")
-      else()
-        set(GENERATED_FILE_WE "${FILE_WE}_${ONNX_NAMESPACE}")
-      endif()
-    endif()
-    file(RELATIVE_PATH REL_DIR "${ONNX_ROOT}" "${FILE_DIR}")
-    set(OUTPUT_PROTO_DIR "${CMAKE_CURRENT_BINARY_DIR}/${REL_DIR}")
-
-    set(OUTPUT_PB_SRC "${OUTPUT_PROTO_DIR}/${GENERATED_FILE_WE}.pb.cc")
-    set(GENERATED_PROTO "${OUTPUT_PROTO_DIR}/${GENERATED_FILE_WE}.proto")
-    list(APPEND ${SRCS} "${OUTPUT_PB_SRC}")
-
-    if(NOT EXISTS "${OUTPUT_PROTO_DIR}")
-      file(MAKE_DIRECTORY "${OUTPUT_PROTO_DIR}")
-    endif()
-
-    set(GEN_PROTO_ARGS
-        -p
-        "${ONNX_NAMESPACE}"
-        -o
-        "${OUTPUT_PROTO_DIR}"
-        "${FILE_WE}")
-    if(ONNX_ML)
-      list(APPEND GEN_PROTO_ARGS -m)
-    endif()
-    if(ONNX_USE_LITE_PROTO)
-      list(APPEND GEN_PROTO_ARGS -l)
-    endif()
-    if(ONNX_VERIFY_PROTO3)
-        if(NOT ONNX_PROTOC_EXECUTABLE)
-          message(FATAL_ERROR "Protobuf compiler not found")
-        endif()
-        list(APPEND GEN_PROTO_ARGS --protoc_path)
-        list(APPEND GEN_PROTO_ARGS "${ONNX_PROTOC_EXECUTABLE}")
-    endif()
-
-    # Use add_custom_command to avoid re-generate of PROTO files
-    add_custom_command(OUTPUT "${GENERATED_PROTO}"
-        COMMAND ${ONNX_PYTHON_INTERPRETER} "${GEN_PROTO_PY}" ${GEN_PROTO_ARGS}
-        DEPENDS ${INFILE}
-        COMMENT "Running gen_proto.py on ${INFILE}")
-    message("Generated: ${GENERATED_PROTO}")
-
-    set(PROTOC_ARGS
-        ${GENERATED_PROTO}
-        -I
-        ${CMAKE_CURRENT_BINARY_DIR}
-        --cpp_out
-        ${CMAKE_CURRENT_BINARY_DIR})
-    if(ONNX_BUILD_PYTHON)
-      list(APPEND PROTOC_ARGS --python_out)
-      if(ONNX_GEN_PB_TYPE_STUBS)
-        list(APPEND PROTOC_ARGS pyi_out:${CMAKE_CURRENT_BINARY_DIR})
-      else()
-        list(APPEND PROTOC_ARGS ${CMAKE_CURRENT_BINARY_DIR})
-      endif()
-    endif()
-    list(APPEND GENERATED_FILES "${GENERATED_PROTO}")
-    add_custom_command(OUTPUT "${OUTPUT_PB_SRC}"
-        COMMAND "${ONNX_PROTOC_EXECUTABLE}" ${PROTOC_ARGS}
-        DEPENDS ${GENERATED_FILES}
-        COMMENT "Running C++ protocol buffer compiler on ${GENERATED_PROTO}")
-  endforeach()
-
-  set(${SRCS} ${${SRCS}} PARENT_SCOPE)
-endfunction()
-
-relative_protobuf_generate_cpp(ONNX_PROTO_SRCS
-                               onnx/onnx.in.proto
-                               onnx/onnx-operators.in.proto
-                               onnx/onnx-data.in.proto)
 
 add_library(onnx_proto ${ONNX_PROTO_SRCS})
 
@@ -432,30 +192,16 @@ list(APPEND ONNX_SRCS ${__tmp_srcs})
 set_target_properties(onnx_proto PROPERTIES CXX_VISIBILITY_PRESET hidden)
 set_target_properties(onnx_proto PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
 
-set(LINKED_PROTOBUF_TARGET protobuf::libprotobuf)
-if(ONNX_USE_LITE_PROTO)
-  if(TARGET protobuf::libprotobuf-lite)
-    set(LINKED_PROTOBUF_TARGET protobuf::libprotobuf-lite)
-  endif()
-endif()
-target_link_libraries(onnx_proto PUBLIC ${LINKED_PROTOBUF_TARGET})
-foreach(ABSL_USED_TARGET IN LISTS protobuf_ABSL_USED_TARGETS)
-  if(TARGET ${ABSL_USED_TARGET})
-    target_link_libraries(onnx_proto PRIVATE ${ABSL_USED_TARGET})
-  endif()
-endforeach()
 add_onnx_global_defines(onnx_proto)
 target_include_directories(onnx_proto PUBLIC
   $<BUILD_INTERFACE:${ONNX_ROOT}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 if(MSVC)
-  # For disabling Protobuf related warnings
+  # For disabling warnings
   target_compile_options(onnx_proto PUBLIC
     /wd4146 # unary minus operator applied to unsigned type,
             # result still unsigned
-    /wd4244 # 'argument': conversion from 'google::
-            # protobuf::uint64' to 'int', possible
-            # loss of data
+    /wd4244 # loss of data
     /wd4267 # Conversion from 'size_t' to 'int',
             # possible loss of data
     /wd4141 # 'inline': used more than once
@@ -585,7 +331,6 @@ if(ONNX_USE_UNITY_BUILD)
   if(MSVC)
     target_compile_options(onnx PRIVATE /bigobj)
   endif()
-# should be enabled for onnx_proto when protobuf can support Unity builds
 endif()
 
 if(ONNX_BUILD_TESTS)

@@ -135,7 +135,7 @@ Operator sets other than the default operator set MUST specify a domain and SHOU
 
 Each model MUST explicitly name the operator sets that it relies on for its functionality. Operator sets define the available operators and their version. Each model defines the imported operator sets by their domains. All models implicitly import the default ONNX operator set.
 
-Each operator set SHALL be defined in a separate document, also using protobuf as the serialization format. How operator set documents are found at runtime is implementation-dependent.
+Each operator set SHALL be defined in a separate document, also using protobuf format as the serialization format. How operator set documents are found at runtime is implementation-dependent.
 
 __Note: As of the publication of this document, no ONNX implementation is known to process operator set documents.__
 
@@ -594,7 +594,7 @@ For more detailed information about multi-device execution patterns and examples
 
 ## Other Specification Documents
 
-The ONNX specification is comprised of this document, which defines the semantics of the IR and the standard data types, and the following documents defining standard operator semantics and the IR syntax. The latter is specified as Protobuf v2 and v3 schema files.
+The ONNX specification is comprised of this document, which defines the semantics of the IR and the standard data types, and the following documents defining standard operator semantics and the IR syntax. The latter is specified as Protobuf format v3 schema files.
 
 See the [metadata category documentation](MetadataProps.md) for more details.
 
@@ -603,24 +603,6 @@ See the [metadata category documentation](MetadataProps.md) for more details.
 [Neural Network Operators](Operators.md)
 
 [Classical Machine Learning operators](Operators-ml.md)
-
-### Syntax
-
-[ONNX Models and Graphs - protobuf v2](../onnx/onnx.proto)
-
-[ONNX Models and Graphs - protobuf v3](../onnx/onnx.proto3)
-
-[ONNX-ML Models and Graphs - protobuf v2](../onnx/onnx-ml.proto)
-
-[ONNX-ML Models and Graphs - protobuf v3](../onnx/onnx-ml.proto3)
-
-[ONNX Operator Sets - protobuf v2](../onnx/onnx-operators.proto)
-
-[ONNX Operator Sets - protobuf v3](../onnx/onnx-operators.proto3)
-
-[ONNX-ML Operator Sets - protobuf v2](../onnx/onnx-operators-ml.proto)
-
-[ONNX-ML Operator Sets - protobuf v3](../onnx/onnx-operators-ml.proto3)
 
 ### Versioning Conventions and Best Practices
 

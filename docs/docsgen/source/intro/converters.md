@@ -232,7 +232,7 @@ Then build the package:
 git submodule update --init --recursive
 set ONNX_BUILD_TESTS=1
 set ONNX_ML=$(onnx_ml)
-set CMAKE_ARGS=-DONNX_USE_PROTOBUF_SHARED_LIBS=ON -DONNX_USE_LITE_PROTO=ON -DONNX_WERROR=ON
+set CMAKE_ARGS=-DONNX_WERROR=ON
 
 python -m build --wheel
 ```
@@ -254,7 +254,7 @@ The package must be built first (see previous section).
 ```
 set ONNX_BUILD_TESTS=1
 set ONNX_ML=$(onnx_ml)
-set CMAKE_ARGS=-DONNX_USE_PROTOBUF_SHARED_LIBS=ON -DONNX_USE_LITE_PROTO=ON -DONNX_WERROR=ON
+set CMAKE_ARGS=-DONNX_WERROR=ON
 
 python onnx\gen_proto.py -l
 python onnx\gen_proto.py -l --ml

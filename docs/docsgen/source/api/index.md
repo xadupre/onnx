@@ -3,7 +3,7 @@
 # API Reference
 
 ```{tip}
-The [ir-py project](https://github.com/onnx/ir-py) provides alternative Pythonic APIs for creating and manipulating ONNX models without interaction with Protobuf.
+The [ir-py project](https://github.com/onnx/ir-py) provides alternative Pythonic APIs for creating and manipulating ONNX models without interaction without the C++ structures defined here.
 ```
 
 ## Versioning
@@ -31,7 +31,7 @@ supports more input and output type, or an attribute becomes an input.
 
 ## Data Structures
 
-Every ONNX object is defined based on a [protobuf message](https://googleapis.dev/python/protobuf/latest/google/protobuf/message.html)
+Every ONNX object is defined based on a structure following the same design as [protobuf message](https://googleapis.dev/python/protobuf/latest/google/protobuf/message.html)
 and has a name ended with suffix `Proto`. For example, {ref}`l-nodeproto` defines
 an operator, {ref}`l-tensorproto` defines a tensor. Next page lists all of them.
 

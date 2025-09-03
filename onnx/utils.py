@@ -235,10 +235,7 @@ def extract_model(
     if check_model:
         onnx.checker.check_model(input_path)
 
-    if infer_shapes and os.path.getsize(input_path) > onnx.checker.MAXIMUM_PROTOBUF:
-        onnx.shape_inference.infer_shapes_path(input_path, output_path)
-        model = onnx.load(output_path)
-    elif infer_shapes:
+    if infer_shapes:
         model = onnx.load(input_path, load_external_data=False)
         model = onnx.shape_inference.infer_shapes(model)
         base_dir = os.path.dirname(input_path)
@@ -249,11 +246,7 @@ def extract_model(
     e = Extractor(model)
     extracted = e.extract_model(input_names, output_names)
 
-    if extracted.ByteSize() > onnx.checker.MAXIMUM_PROTOBUF:
-        location = os.path.basename(output_path) + ".data"
-        onnx.save(extracted, output_path, save_as_external_data=True, location=location)
-    else:
-        onnx.save(extracted, output_path)
+    onnx.save(extracted, output_path)
 
     if check_model:
         onnx.checker.check_model(output_path)

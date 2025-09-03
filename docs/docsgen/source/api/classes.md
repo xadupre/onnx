@@ -2,7 +2,7 @@
 
 # Protos
 
-This structures are defined with protobuf in files `onnx/*.proto`.
+This structures are defined in files `onnx/onnx2/cpu/onnx2.*`.
 It is recommended to use function in module {ref}`l-mod-onnx-helper`
 to create them instead of directly instantiated them.
 Every structure can be printed with function `print` and is rendered

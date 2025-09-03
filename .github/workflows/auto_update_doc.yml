@@ -37,7 +37,6 @@ jobs:
         
     - name: Install ONNX from source and update documentation
       run: |
-        source workflow_scripts/protobuf/build_protobuf_unix.sh 3
         python -m pip install -q --upgrade pip
         python -m pip install -r requirements-release_build.txt
         git submodule update --init --recursive

@@ -46,22 +46,10 @@ std::string GetValueCaseString(const TypeProto& type) {
 }
 
 std::string GetElemTypeString(const TypeProto_Tensor& type) {
-#ifndef ONNX_USE_LITE_PROTO
-  std::string type_str = TensorProto::DataType_Name(static_cast<TensorProto_DataType>(type.elem_type()));
-  if (!type_str.empty()) {
-    return type_str;
-  }
-#endif
   return ONNX_NAMESPACE::to_string(type.elem_type());
 }
 
 std::string GetElemTypeString(const TypeProto_SparseTensor& type) {
-#ifndef ONNX_USE_LITE_PROTO
-  std::string type_str = TensorProto::DataType_Name(static_cast<TensorProto_DataType>(type.elem_type()));
-  if (!type_str.empty()) {
-    return type_str;
-  }
-#endif
   return ONNX_NAMESPACE::to_string(type.elem_type());
 }
 
@@ -844,7 +832,7 @@ void InferShapes(
   LoadProtoFromPath(model_path, model);
   InferShapes(model, schema_registry, options, generated_shape_data_by_name);
   // Save the inferred model to the original model path
-  // Use SerializeToString instead of SerializeToOstream due to LITE_PROTO
+  // Use SerializeToString instead of SerializeToOstream
   std::fstream output(save_path, std::ios::out | std::ios::trunc | std::ios::binary);
   std::string model_string;
   ONNX_TRY {

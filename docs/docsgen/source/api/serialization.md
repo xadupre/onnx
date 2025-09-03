@@ -86,7 +86,7 @@ Proto means here any type containing data including a model, a tensor,
 a sparse tensor, any class listed in page {ref}`l-onnx-classes`.
 The user must know the type of the data he needs to restore
 and then call method `ParseFromString`.
-[protobuf](https://developers.google.com/protocol-buffers)
+(same as [protobuf](https://developers.google.com/protocol-buffers))
 does not store any information about the class
 of the saved data. Therefore, this class must be known before
 restoring an object.

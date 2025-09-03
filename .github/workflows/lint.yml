@@ -68,8 +68,6 @@ jobs:
           python-version: "3.13"
       - name: Install ONNX
         run: |
-          source workflow_scripts/protobuf/build_protobuf_unix.sh $(nproc)
-
           python -m pip install --quiet --upgrade pip setuptools wheel
 
           export ONNX_BUILD_TESTS=0

@@ -40,7 +40,7 @@ The ONNX versioning principles are based on the [robustness principle](https://e
 2. A consumer of a given ONNX model SHOULD consume an updated ONNX file, provided there are no breaking changes in the new ONNX file's IR version, referenced operator versions, or model version (meaning the MAJOR version numbers have not changed between the two ONNX files).
 3. A consumer of a given ONNX model MAY consume an updated ONNX file, provided there are one or more breaking changes in the new ONNX file's IR version, referenced operator versions, or model version.
 
-### Serializing SemVer version numbers in protobuf
+### Serializing SemVer version numbers
 
 For efficiency, ONNX serializes the MAJOR, MINOR, and PATCH values as a bit-packed 64-bit integer; the two most significant bytes are the MAJOR component, the next two most significant bytes are the MINOR component, and the least significant four bytes are the PATCH component.
 

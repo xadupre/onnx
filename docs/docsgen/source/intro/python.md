@@ -1,7 +1,7 @@
 # ONNX with Python
 
 ```{tip}
-Check out the [ir-py project](https://github.com/onnx/ir-py) for an alternative set of Python APIs for creating and manipulating ONNX models. The ir-py project provides a more modern and ergonomic interface compared to the ONNX Protobuf APIs described here.
+Check out the [ir-py project](https://github.com/onnx/ir-py) for an alternative set of Python APIs for creating and manipulating ONNX models. The ir-py project provides a more modern and ergonomic interface compared to the ONNX APIs described here.
 ```
 
 Next sections highlight the main functions used to build
@@ -167,7 +167,7 @@ the integer to its corresponding numpy data type (float32 for 1).
 
 ## Serialization
 
-ONNX is built on the top of protobuf. It adds the necessary definitions
+ONNX is built from C++ following protobuf format. It adds the necessary definitions
 to describe a machine learning model and most of the time, ONNX is used
 to serialize or deserialize a model. First section addresses this need.
 Second section introduces the serialization and deserialization of
@@ -176,7 +176,7 @@ data such as tensors, sparse tensors...
 ### Model Serialization
 
 The model needs to be saved to be deployed.
-ONNX is based on protobuf. It minimizes the space needed
+It minimizes the space needed
 to save the graph on disk. Every object (see {ref}`l-onnx-classes`)
 in onnx can be serialized with method `SerializeToString`. That's
 the case for the whole model.
@@ -225,10 +225,8 @@ The graph can be restored with function `load`:
     print(onnx_model)
 ```
 
-It looks exactly the same. Any model can be serialized this way
-unless they are bigger than 2 Gb. protobuf is limited to size
-smaller than this threshold. Next sections will show how to
-overcome that limit.
+It looks exactly the same. Next sections will show how to
+produces smaller files by storing weights elsewhere.
 
 ### Data Serialization
 
@@ -1496,18 +1494,7 @@ the same performance gain on any other runtime.
 
 ### Python and C++
 
-onnx relies on protobuf to define its type.
-You would assume that a python object is just a wrapper around
-a C pointer on the internal structure. Therefore, it should be
-possible to access internal data from a function receiving a python
-object of type `ModelProto`. But it is not. According to
-[Protobuf 4, changes](https://developers.google.com/protocol-buffers/docs/news/2022-05-06),
-this is no longer possible after version 4 and it is safer to assume the
-only way to get a hold on the content is to serialize the model
-into bytes, give it to the C function, then deserialize it.
-Functions like `check_model` or
-`shape_inference` are calling `SerializeToString` then
-`ParseFromString` before checking the model with a C code.
+onnx uses pybind11 to wraps its C++ classes.
 
 ### Attributes and inputs
 

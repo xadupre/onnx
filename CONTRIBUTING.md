@@ -63,7 +63,7 @@ from onnx root dir should work.
 ### Folder structure
 
 - `onnx/`: the main folder that all code lies under
-  - `onnx.proto`: the protobuf that contains all the structures
+  - `onnx.proto`: the proto that contains all the structures
   - `checker.py`: a utility to check whether a serialized ONNX proto is legal
   - `shape_inference.py`: a utility to infer types and shapes for ONNX models
   - `version_converter.py`: a utility to upgrade or downgrade version for ONNX models

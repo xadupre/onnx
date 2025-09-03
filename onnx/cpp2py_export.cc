@@ -43,11 +43,7 @@ struct PythonProtoTypeMap {};
     static constexpr auto ModuleName = pybind11::detail::const_name(PY_MODULE_NAME);                \
   };
 
-#ifdef ONNX_USE_LITE_PROTO
 using BASE_PROTO_TYPE = ::google::protobuf::MessageLite;
-#else
-using BASE_PROTO_TYPE = ::google::protobuf::Message;
-#endif
 
 template <typename _ProtoType>
 class pybind11::detail::type_caster<_ProtoType, std::enable_if_t<std::is_base_of<BASE_PROTO_TYPE, _ProtoType>::value>> {

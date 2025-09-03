@@ -18,7 +18,6 @@ __all__ = [
     "LEXICAL_SCOPE_CONTEXT",
     "ValidationError",
     "C",
-    "MAXIMUM_PROTOBUF",
 ]
 
 import os
@@ -31,10 +30,6 @@ from onnx.onnx_pb import IR_VERSION
 
 if TYPE_CHECKING:
     from google.protobuf.message import Message
-
-# Limitation of single protobuf file is 2GiB
-MAXIMUM_PROTOBUF = 2147483648
-
 
 # NB: Please don't edit this context!
 DEFAULT_CONTEXT = C.CheckerContext()
@@ -157,10 +152,6 @@ def check_model(
         )
         # If the protobuf is larger than 2GiB,
         # remind users should use the model path to check
-        if sys.getsizeof(protobuf_string) > MAXIMUM_PROTOBUF:
-            raise ValueError(
-                "This protobuf of onnx model is too large (>2GiB). Call check_model with model path instead."
-            )
         C.check_model(
             protobuf_string,
             full_check,

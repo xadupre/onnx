@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [build-system]
-requires = ["setuptools>=77", "protobuf>=4.25.1"]
+requires = ["setuptools>=77"]
 backend-path = ["."]
 build-backend = "backend"
 
@@ -164,7 +164,7 @@ lint.ignore = [
     "PLR0912", # Too many branches
     "PLR0913", # Too many arguments to function call
     "PLR0915", # Too many statements
-    "PYI011", # Allow protobuf enums as defaults to function arguments
+    "PYI011", # Allow enums as defaults to function arguments
     "PYI021", # Allow docstrings in pyi files
     "PYI041", # int | float is sometimes more clear than float
     "RUF015", # next(iter(...)) sometimes obscures the intent when we access the 0th element of a shape

@@ -99,15 +99,7 @@ class _ProtobufSerializer(ProtoSerializer):
 
     def serialize_proto(self, proto: _Proto) -> bytes:
         if hasattr(proto, "SerializeToString") and callable(proto.SerializeToString):
-            try:
-                result = proto.SerializeToString()
-            except ValueError as e:
-                if proto.ByteSize() >= onnx.checker.MAXIMUM_PROTOBUF:
-                    raise ValueError(
-                        "The proto size is larger than the 2 GB limit. "
-                        "Please use save_as_external_data to save tensors separately from the model file."
-                    ) from e
-                raise
+            result = proto.SerializeToString()
             return result  # type: ignore
         raise TypeError(
             f"No SerializeToString method is detected.\ntype is {type(proto)}"

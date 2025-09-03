@@ -16,7 +16,6 @@ updates:
     ignore:
       # Only update them manually since updating them might break compatibility
       - dependency-name: "numpy"
-      - dependency-name: "protobuf"
     open-pull-requests-limit: 10
     labels:      
       - "python"

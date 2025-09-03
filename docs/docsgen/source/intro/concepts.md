@@ -88,7 +88,7 @@ has four attributes, *alpha*, *beta*, *transA*, *transB*. Unless the runtime
 allows it through its API, once it has loaded the ONNX graph, these values
 cannot be changed and remain frozen for all the predictions.
 
-## Serialization with protobuf
+## Serialization
 
 The deployment of a machine-learned model into production
 usually requires replicating the entire ecosystem used to
@@ -100,10 +100,10 @@ suitable for the production application, C, java, python, javascript,
 C#, Webassembly, ARM...
 
 But to make that happen, the ONNX graph needs to be saved.
-ONNX uses *protobuf* to serialize the graph into
+ONNX uses its own structures to serialize the graph into
 one single block
 (see [Parsing and Serialization](https://developers.google.com/protocol-buffers/docs/pythontutorial#parsing-and-serialization)). It aims at optimizing the model size
-as much as possible.
+as much as possible. It follows the protobuf format.
 
 ## Metadata
 

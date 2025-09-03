@@ -21,7 +21,7 @@ We propose to treat a .zip file as a key-value store, mapping string keys (filen
 
 Note that the order is significant here. We place the model definition file at the end of the archive to allow for the common case of net manipulations while keeping the weights invariant. This way, tools that manipulate the archive do not need to repack or realign all weights when only touching the model file.
 
-Within the ONNX protobuf definition, we propose the following changes:
+Within the ONNX definition, we propose the following changes:
 
 
 * Add `optional string external_data` to `TensorProto`. This can be treated as a data field similar to `float_data`, `int_data`, etc in that there must be exactly one of those fields specified. If a `TensorProto` specifies `external_data`, the implementation shall resolve this reference by string key in the containing zip archive. All values of `external_data` must be unique (under down-casing) and conform to the C identifier specification.

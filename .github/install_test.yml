@@ -42,7 +42,5 @@ jobs:
           python -m pip install -r requirements-release_build.txt
           git submodule update --init --recursive
 
-          source workflow_scripts/protobuf/build_protobuf_unix.sh 3
-
           pip install -e .
 

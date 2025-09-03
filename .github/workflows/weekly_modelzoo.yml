@@ -45,9 +45,7 @@ jobs:
     - name: Build and install ONNX
       shell: bash
       run: |
-        # Install protobuf from source
         export NUM_CORES=`sysctl -n hw.logicalcpu`
-        source workflow_scripts/protobuf/build_protobuf_unix.sh $NUM_CORES $(pwd)/protobuf/protobuf_install
         # Build ONNX
         export CC=clang
         export CXX=clang++

@@ -16,10 +16,6 @@ function(add_onnx_global_defines target)
     target_compile_definitions(${target} PUBLIC "ONNX_ML=1")
   endif()
 
-  if(ONNX_USE_LITE_PROTO)
-    target_compile_definitions(${target} PUBLIC "ONNX_USE_LITE_PROTO=1")
-  endif()
-
   if(ONNX_DISABLE_STATIC_REGISTRATION)
     target_compile_definitions(${target} PUBLIC "__ONNX_DISABLE_STATIC_REGISTRATION")
   endif()
