@@ -28,29 +28,44 @@
 // ONNX_API is a macro that, depends on whether you are building the
 // main ONNX library or not, resolves to either ONNX_EXPORT or
 // ONNX_IMPORT.
-//
-// This is used in e.g. ONNX's protobuf files: when building the main library,
-// it is defined as ONNX_EXPORT to fix a Windows global-variable-in-dll
-// issue, and for anyone dependent on ONNX it will be defined as
-// ONNX_IMPORT. ONNX_BUILD_MAIN_LIB can also be set when being built
-// statically if ONNX is being linked into a shared library that wants
-// to export the ONNX APIs and classes.
-//
-// More details on Windows dllimport / dllexport can be found at
-// https://msdn.microsoft.com/en-us/library/3y1sfaz2.aspx
-//
-// This solution is similar to
-// https://github.com/pytorch/pytorch/blob/master/caffe2/core/common.h
+
 #if defined(ONNX_BUILD_SHARED_LIBS) || defined(ONNX_BUILD_MAIN_LIB)
 #define ONNX_API ONNX_EXPORT
 #else
 #define ONNX_API ONNX_IMPORT
 #endif
 
-#ifdef ONNX_ML
-#include "onnx/onnx-ml.pb.h"
-#else
-#include "onnx/onnx.pb.h"
-#endif
+#include "onnx/onnx2/cpu/onnx2.h"
+
+using Message = ONNX_NAMESPACE::v2::Message;
+using AttributeProto = ONNX_NAMESPACE::v2::AttributeProto;
+using FunctionProto = ONNX_NAMESPACE::v2::FunctionProto;
+using GraphProto = ONNX_NAMESPACE::v2::GraphProto;
+using ModelProto = ONNX_NAMESPACE::v2::ModelProto;
+using NodeProto = ONNX_NAMESPACE::v2::NodeProto;
+using SparseTensorProto = ONNX_NAMESPACE::v2::SparseTensorProto;
+using TensorProto = ONNX_NAMESPACE::v2::TensorProto;
+using TensorShapeProto = ONNX_NAMESPACE::v2::TensorShapeProto;
+using TypeProto = ONNX_NAMESPACE::v2::TypeProto;
+using TensorShapeProto_Dimension = ONNX_NAMESPACE::v2::TensorShapeProto::Dimension;
+
+using AttributeProto_AttributeType = ONNX_NAMESPACE::v2::AttributeProto::AttributeType;
+using TypeProto_Map = ONNX_NAMESPACE::v2::TypeProto::Map;
+using TypeProto_Sequence = ONNX_NAMESPACE::v2::TypeProto::Sequence;
+using TypeProto_SparseTensor = ONNX_NAMESPACE::v2::TypeProto::SparseTensor;
+using TypeProto_Tensor = ONNX_NAMESPACE::v2::TypeProto::Tensor;
+
+#define AttributeProto_AttributeType_FLOAT ONNX_NAMESPACE::v2::AttributeProto::AttributeType::FLOAT
+#define AttributeProto_AttributeType_FLOATS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::FLOATS
+#define AttributeProto_AttributeType_GRAPH ONNX_NAMESPACE::v2::AttributeProto::AttributeType::GRAPH
+#define AttributeProto_AttributeType_GRAPHS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::GRAPHS
+#define AttributeProto_AttributeType_INT ONNX_NAMESPACE::v2::AttributeProto::AttributeType::INT
+#define AttributeProto_AttributeType_INTS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::INTS
+#define AttributeProto_AttributeType_STRING ONNX_NAMESPACE::v2::AttributeProto::AttributeType::STRING
+#define AttributeProto_AttributeType_STRINGS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::STRINGS
+#define AttributeProto_AttributeType_TENSOR ONNX_NAMESPACE::v2::AttributeProto::AttributeType::TENSOR
+#define AttributeProto_AttributeType_TENSORS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::TENSORS
+#define AttributeProto_AttributeType_TYPE_PROTO ONNX_NAMESPACE::v2::AttributeProto::AttributeType::TYPE_PROTO
+#define AttributeProto_AttributeType_TYPE_PROTOS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::TYPE_PROTOS
 
 #endif // ! ONNX_ONNX_PB_H

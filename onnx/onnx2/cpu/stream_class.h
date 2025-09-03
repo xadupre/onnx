@@ -57,7 +57,13 @@
   inline const type& ref_##name() const {                   \
     return name##_;                                         \
   }                                                         \
+  inline const type& name() const {                         \
+    return name##_;                                         \
+  }                                                         \
   inline const type* ptr_##name() const {                   \
+    return &name##_;                                        \
+  }                                                         \
+  inline type* mutable_##name() {                           \
     return &name##_;                                        \
   }                                                         \
   inline bool has_##name() const {                          \
@@ -83,6 +89,9 @@
     return name##_;                                          \
   }                                                          \
   inline const type* ptr_##name() const {                    \
+    return &name##_;                                         \
+  }                                                          \
+  inline type* mutable_##name() {                            \
     return &name##_;                                         \
   }                                                          \
   inline bool has_##name() const {                           \
@@ -116,7 +125,13 @@
   inline const utils::RepeatedField<type>& ref_##name() const { \
     return name##_;                                             \
   }                                                             \
+  inline const utils::RepeatedField<type>& name() const {       \
+    return name##_;                                             \
+  }                                                             \
   inline const utils::RepeatedField<type>* ptr_##name() const { \
+    return &name##_;                                            \
+  }                                                             \
+  inline utils::RepeatedField<type>* mutable_##name() {         \
     return &name##_;                                            \
   }                                                             \
   inline type& add_##name() {                                   \
@@ -154,6 +169,9 @@
   inline const utils::RepeatedProtoField<type>* ptr_##name() const { \
     return &name##_;                                                 \
   }                                                                  \
+  inline utils::RepeatedProtoField<type>* mutable_##name() {         \
+    return &name##_;                                                 \
+  }                                                                  \
   inline type& add_##name() {                                        \
     return name##_.add();                                            \
   }                                                                  \
@@ -187,6 +205,9 @@
     return name##_;                                             \
   }                                                             \
   inline const utils::RepeatedField<type>* ptr_##name() const { \
+    return &name##_;                                            \
+  }                                                             \
+  inline utils::RepeatedField<type>* mutable_##name() {         \
     return &name##_;                                            \
   }                                                             \
   inline type& add_##name() {                                   \
@@ -225,7 +246,14 @@
     EXT_ENFORCE(name##_.has_value(), "Optional field '", #name, "' has no value."); \
     return *name##_;                                                                \
   }                                                                                 \
+  inline const type& name() const {                                                 \
+    EXT_ENFORCE(name##_.has_value(), "Optional field '", #name, "' has no value."); \
+    return *name##_;                                                                \
+  }                                                                                 \
   inline const type* ptr_##name() const {                                           \
+    return has_##name() ? &(*name##_) : static_cast<type*>(nullptr);                \
+  }                                                                                 \
+  inline type* mutable_##name() {                                                   \
     return has_##name() ? &(*name##_) : static_cast<type*>(nullptr);                \
   }                                                                                 \
   inline utils::OptionalField<type>& name##_optional() {                            \
@@ -281,6 +309,9 @@
     return *name##_;                                                                     \
   }                                                                                      \
   inline const type* ptr_##name() const {                                                \
+    return has_##name() ? &(*name##_) : static_cast<type*>(nullptr);                     \
+  }                                                                                      \
+  inline type* mutable_##name() {                                                        \
     return has_##name() ? &(*name##_) : static_cast<type*>(nullptr);                     \
   }                                                                                      \
   inline utils::OptionalEnumField<type>& name##_optional() {                             \

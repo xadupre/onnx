@@ -138,6 +138,10 @@ class RepeatedField {
     values_.emplace_back(T());
     return values_.back();
   }
+  inline T* Add() {
+    values_.emplace_back(T());
+    return &(values_.back());
+  }
   inline T& back() {
     return values_.back();
   }
@@ -199,6 +203,7 @@ class RepeatedProtoField {
   void extend(const RepeatedProtoField<T>& v);
   void extend(const RepeatedProtoField<T>&& v);
   T& add();
+  T* Add();
   T& back();
   std::vector<std::string> PrintToVectorString(PrintOptions& options) const;
 

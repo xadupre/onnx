@@ -4,9 +4,6 @@
 
 #pragma once
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-
 #include <string>
 #include <vector>
 
@@ -14,17 +11,9 @@
 
 namespace ONNX_NAMESPACE {
 
-using ::google::protobuf::Message;
-inline std::string ProtoDebugString(const Message& proto) {
-  return proto.ShortDebugString();
-}
-
 template <typename Proto>
 bool ParseProtoFromBytes(Proto* proto, const char* buffer, size_t length) {
-  ::google::protobuf::io::ArrayInputStream input_stream(buffer, static_cast<int>(length));
-  ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
-  int total_bytes_limit = (2048LL << 20) - 1;
-  return proto->ParseFromCodedStream(&coded_stream);
+  return proto->ParseFromString(std::string(buffer, length));
 }
 
 template <typename T>

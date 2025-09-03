@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "onnx/defs/schema.h"
-#include "onnx/onnx-data.pb.h"
 #include "onnx/string_utils.h"
 
 namespace ONNX_NAMESPACE {

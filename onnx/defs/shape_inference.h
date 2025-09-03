@@ -175,7 +175,7 @@ inline std::string
 getAttribute(const InferenceContext& ctx, const std::string& attributeName, const std::string& defaultValue) {
   auto attr_proto = ctx.getAttribute(attributeName);
   if ((nullptr != attr_proto) && attr_proto->has_s())
-    return attr_proto->s();
+    return attr_proto->s().as_string();
   return defaultValue;
 }
 

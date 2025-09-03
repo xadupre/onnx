@@ -41,7 +41,7 @@ endif()
 option(ONNX_BUILD_PYTHON "Build Python binaries" OFF)
 option(ONNX_WERROR "Build with Werror" OFF)
 option(ONNX_COVERAGE "Build with coverage instrumentation" OFF)
-option(ONNX_BUILD_TESTS "Build ONNX C++ APIs Tests" OFF)
+option(ONNX_BUILD_TESTS "Build ONNX C++ APIs Tests" ON)
 option(ONNX_USE_ASAN "Build ONNX with ASAN" OFF)
 option(ONNX_DISABLE_EXCEPTIONS "Disable exception handling." OFF)
 option(ONNX_DISABLE_STATIC_REGISTRATION "Disable static registration for ONNX operator schemas." OFF)
@@ -159,21 +159,21 @@ if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
 endif()
 
 # ONNX2 -- 
-message(STATUS "Setting ONNX2 with ${ONNX_ROOT}/onnx/onnx2/...")
-file(GLOB_RECURSE ONNX2_SOURCES
+# message(STATUS "Setting ONNX2 with ${ONNX_ROOT}/onnx/onnx2/...")
+file(GLOB_RECURSE ONNX_PROTO_SRCS
     "${ONNX_ROOT}/onnx/onnx2/cpu/*.cc"
     "${ONNX_ROOT}/onnx/onnx2/cpu/*.cpp"
     "${ONNX_ROOT}/onnx/onnx2/cpu/*.hpp"
     "${ONNX_ROOT}/onnx/onnx2/cpu/*.h")
-list(REMOVE_ITEM ONNX2_SOURCES "${ONNX_ROOT}/onnx/onnx2/cpu/_onnx2py.cpp")
-add_library(lib_onnx2_cpp STATIC ${ONNX2_SOURCES})
-set_target_properties(lib_onnx2_cpp PROPERTIES CXX_VISIBILITY_PRESET hidden)
-set_target_properties(lib_onnx2_cpp PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
-target_include_directories(lib_onnx2_cpp PUBLIC
-  $<BUILD_INTERFACE:${ONNX_ROOT}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-add_onnx_global_defines(lib_onnx2_cpp)
-message(STATUS "Setting ONNX2 done.")
+list(REMOVE_ITEM ONNX_PROTO_SRCS "${ONNX_ROOT}/onnx/onnx2/cpu/_onnx2py.cpp")
+# add_library(lib_onnx2_cpp STATIC ${ONNX2_SOURCES})
+# set_target_properties(lib_onnx2_cpp PROPERTIES CXX_VISIBILITY_PRESET hidden)
+# set_target_properties(lib_onnx2_cpp PROPERTIES VISIBILITY_INLINES_HIDDEN 1)
+# target_include_directories(lib_onnx2_cpp PUBLIC
+#   $<BUILD_INTERFACE:${ONNX_ROOT}>
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+# add_onnx_global_defines(lib_onnx2_cpp)
+# message(STATUS "Setting ONNX2 done.")
 
 list(APPEND CMAKE_MODULE_PATH ${ONNX_ROOT}/cmake/external)
 
@@ -240,7 +240,7 @@ if(ONNX_BUILD_PYTHON)
 
   # Adds python bindings for onnx2.
   pybind11_add_module(_onnx2py MODULE "${ONNX_ROOT}/onnx/onnx2/cpu/_onnx2py.cpp")
-  target_link_libraries(_onnx2py PRIVATE lib_onnx2_cpp)
+  target_link_libraries(_onnx2py PRIVATE onnx_proto)
 
   if(CMAKE_SYSTEM_NAME STREQUAL "AIX")
     # whole-archive linker option not available on AIX
