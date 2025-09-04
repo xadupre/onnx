@@ -43,17 +43,26 @@ using FunctionProto = ONNX_NAMESPACE::v2::FunctionProto;
 using GraphProto = ONNX_NAMESPACE::v2::GraphProto;
 using ModelProto = ONNX_NAMESPACE::v2::ModelProto;
 using NodeProto = ONNX_NAMESPACE::v2::NodeProto;
+using OperatorSetIdProto = ONNX_NAMESPACE::v2::OperatorSetIdProto;
 using SparseTensorProto = ONNX_NAMESPACE::v2::SparseTensorProto;
 using TensorProto = ONNX_NAMESPACE::v2::TensorProto;
 using TensorShapeProto = ONNX_NAMESPACE::v2::TensorShapeProto;
 using TypeProto = ONNX_NAMESPACE::v2::TypeProto;
 using TensorShapeProto_Dimension = ONNX_NAMESPACE::v2::TensorShapeProto::Dimension;
+using ValueInfoProto = ONNX_NAMESPACE::v2::ValueInfoProto;
+
+using Version = ONNX_NAMESPACE::v2::Version;
 
 using AttributeProto_AttributeType = ONNX_NAMESPACE::v2::AttributeProto::AttributeType;
+using TensorProto_DataType = ONNX_NAMESPACE::v2::TensorProto::DataType;
 using TypeProto_Map = ONNX_NAMESPACE::v2::TypeProto::Map;
 using TypeProto_Sequence = ONNX_NAMESPACE::v2::TypeProto::Sequence;
 using TypeProto_SparseTensor = ONNX_NAMESPACE::v2::TypeProto::SparseTensor;
 using TypeProto_Tensor = ONNX_NAMESPACE::v2::TypeProto::Tensor;
+
+#define TensorProto_DataType_IsValid ONNX_NAMESPACE::v2::TensorProto::DataType_IsValid
+
+
 
 #define AttributeProto_AttributeType_FLOAT ONNX_NAMESPACE::v2::AttributeProto::AttributeType::FLOAT
 #define AttributeProto_AttributeType_FLOATS ONNX_NAMESPACE::v2::AttributeProto::AttributeType::FLOATS

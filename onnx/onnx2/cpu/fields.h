@@ -114,6 +114,9 @@ class RepeatedField {
   inline const T& operator[](size_t index) const {
     return values_[index];
   }
+  inline const T& Get(size_t index) const {
+    return values_[index];
+  }
   inline void remove_range(size_t start, size_t stop, size_t step) {
     EXT_ENFORCE(step == 1, "remove_range not implemented for step=", static_cast<int>(step));
     EXT_ENFORCE(start == 0, "remove_range not implemented for start=", static_cast<int>(start));
@@ -233,6 +236,34 @@ class RepeatedProtoField {
   }
   inline iterator end() {
     return iterator(this, size());
+  }
+
+  class const_iterator {
+   private:
+    const RepeatedProtoField<T>* parent_;
+    size_t pos_;
+
+   public:
+    explicit const_iterator(const RepeatedProtoField<T>* parent, size_t pos = 0) : parent_(parent), pos_(pos) {}
+    const_iterator& operator++() {
+      ++pos_;
+      return *this;
+    }
+    bool operator==(const const_iterator& other) const {
+      return pos_ == other.pos_ && parent_ == other.parent_;
+    }
+    bool operator!=(const const_iterator& other) const {
+      return !(*this == other);
+    }
+    const T& operator*() const {
+      return (*parent_)[pos_];
+    }
+  };
+  inline const_iterator begin() const {
+    return const_iterator(this, 0);
+  }
+  inline const_iterator end() const {
+    return const_iterator(this, size());
   }
 
  private:

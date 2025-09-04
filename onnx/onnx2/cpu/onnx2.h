@@ -43,6 +43,11 @@
 namespace ONNX_NAMESPACE {
 namespace v2 {
 
+class Version {
+ public:
+  static constexpr int IR_VERSION = 10;
+};
+
 enum OperatorStatus { EXPERIMENTAL = 0, STABLE = 1 };
 
 BEGIN_PROTO(StringStringEntryProto, "Defines a key value pair, both defines a strings.")
@@ -83,7 +88,7 @@ BEGIN_PROTO(
     SimpleShardedDimProto,
     "Indicates that N blocks are divided into M shards. N is allowed to be symbolic "
     "where M is required to be a constant.")
-FIELD_OPTIONAL(int64_t, dim_value, 1, "Dimension value to be sharded if it is a fixed value.")
+FIELD_OPTIONALC(int64_t, dim_value, 1, "Dimension value to be sharded if it is a fixed value.")
 FIELD_STR(dim_param, 2, "Dimension name to be sharded if it is a dynamic value.")
 FIELD_DEFAULT(
     int64_t,
@@ -148,7 +153,7 @@ FIELD_STR(
     "This field MUST be present for this version of the IR., ID of the configuration. "
     "MUST match the name of a DeviceConfigurationProto.")
 FIELD_REPEATED(ShardingSpecProto, sharding_spec, 2, "Sharding spec for the node.")
-FIELD_OPTIONAL(int32_t, pipeline_stage, 3, "Pipeline stage of this node.")
+FIELD_OPTIONALC(int32_t, pipeline_stage, 3, "Pipeline stage of this node.")
 END_PROTO()
 
 BEGIN_PROTO(OperatorSetIdProto, "Defines a unqiue pair domain, opset version for a set of operators.")
@@ -176,7 +181,7 @@ BEGIN_PROTO(
     Dimension,
     "Defines a dimension, it can be fixed (an integer dim_value) or dynamic "
     "(a string dim_param). Only one of them can be set.")
-FIELD_OPTIONAL(int64_t, dim_value, 1, "Dimension value if it is a fixed value.")
+FIELD_OPTIONALC(int64_t, dim_value, 1, "Dimension value if it is a fixed value.")
 FIELD_STR(dim_param, 2, "Dimension name if it is a dynamic value.")
 FIELD_STR(
     denotation,
@@ -197,7 +202,7 @@ END_PROTO()
 // TensorProto
 
 BEGIN_PROTO_NOINIT(TensorProto, "Defines a tensor and its content.")
-enum class DataType : int32_t {
+enum DataType : int32_t {
   UNDEFINED = 0,
   // Basic types.
   FLOAT = 1, // float
@@ -251,6 +256,10 @@ enum class DataType : int32_t {
   // Future extensions go here.
 };
 
+inline static bool DataType_IsValid(DataType type) {
+  return type > DataType::UNDEFINED && type < DataType::FLOAT8E8M0;
+}
+
 enum DataLocation { DEFAULT = 0, EXTERNAL = 1 };
 
 BEGIN_PROTO(
@@ -267,7 +276,7 @@ inline TensorProto() {
 
 FIELD_REPEATED(uint64_t, dims, 1, "The shape of the tensor.")
 FIELD(DataType, data_type, 2, "The data type of the tensor. This field MUST have a valid TensorProto.DataType value")
-FIELD_OPTIONAL(
+FIELD_OPTIONALP(
     Segment,
     segment,
     3,
@@ -403,18 +412,43 @@ BEGIN_PROTO_NOINIT(
     TypeProto,
     "Defines a type, it can be a tensor type (element type and "
     "shape), a sequence of the same element type, ...")
+
+enum ValueCase : int32_t {
+  VALUE_NOT_SET = 0,
+  kTensorType = 1,
+  kMapType = 2,
+  kSequenceType = 3,
+  kSparseTensorType = 4,
+  kOptionalType = 5,
+  kTypeProtoType = 6,
+};
+
+inline ValueCase value_case() const {
+  if (has_tensor_type())
+    return ValueCase::kTensorType;
+  if (has_map_type())
+    return ValueCase::kMapType;
+  if (has_sequence_type())
+    return ValueCase::kSequenceType;
+  if (has_sparse_tensor_type())
+    return ValueCase::kSparseTensorType;
+  if (has_optional_type())
+    return ValueCase::kOptionalType;
+  return ValueCase::VALUE_NOT_SET;
+}
+
 BEGIN_PROTO(Tensor, "Defines a tensor type (element type, shape).")
-FIELD_OPTIONAL(
+FIELD_OPTIONALC(
     int32_t,
     elem_type,
     1,
     "This field MUST NOT have the value of UNDEFINED. This field MUST have a valid "
     "TensorProto.DataType value. This field MUST be present for this version of the IR.")
-FIELD_OPTIONAL(TensorShapeProto, shape, 2, "The shape.")
+FIELD_OPTIONALPR(TensorShapeProto, shape, 2, "The shape.")
 END_PROTO()
 
 BEGIN_PROTO(SparseTensor, "Defines a sparse tensor type (element type, shape)")
-FIELD_OPTIONAL(
+FIELD_OPTIONALC(
     int32_t,
     elem_type,
     1,
@@ -422,11 +456,11 @@ FIELD_OPTIONAL(
     "UNDEFINED. This field MUST have a valid TensorProto.DataType value. This field MUST be "
     "present for this version of the IR.ED. This field MUST have a valid TensorProto.DataType "
     "value. This field MUST be present for this version of the IR.")
-FIELD_OPTIONAL(TensorShapeProto, shape, 2, "The shape.")
+FIELD_OPTIONALPR(TensorShapeProto, shape, 2, "The shape.")
 END_PROTO()
 
 BEGIN_PROTO(Sequence, "Defines the type of each element in a sequence.")
-FIELD_OPTIONAL(
+FIELD_OPTIONALPR(
     TypeProto,
     elem_type,
     1,
@@ -435,7 +469,7 @@ FIELD_OPTIONAL(
 END_PROTO()
 
 BEGIN_PROTO(Optional, "Defines the type of an optional value.")
-FIELD_OPTIONAL(
+FIELD_OPTIONALPR(
     TypeProto,
     elem_type,
     1,
@@ -452,13 +486,13 @@ FIELD_DEFAULT(
     "This field MUST have a valid TensorProto.DataType value. This field MUST be present for "
     "this version of the IR. This field MUST refer to an integral type ([U]INT{8|16|32|64}) "
     "or STRING optional int32 key_type = 1;")
-FIELD_OPTIONAL(TypeProto, value_type, 2, "This field MUST be present for this version of the IR.")
+FIELD_OPTIONALPR(TypeProto, value_type, 2, "This field MUST be present for this version of the IR.")
 END_PROTO()
 
 inline TypeProto() {}
-FIELD_OPTIONAL_ONEOF(Tensor, tensor_type, 1, type, "The type of a tensor.")
-FIELD_OPTIONAL_ONEOF(Sequence, sequence_type, 4, type, "The type of a sequence.")
-FIELD_OPTIONAL_ONEOF(Map, map_type, 5, type, "The type of a map.")
+FIELD_OPTIONAL_ONEOFPR(Tensor, tensor_type, 1, type, "The type of a tensor.")
+FIELD_OPTIONAL_ONEOFPR(Sequence, sequence_type, 4, type, "The type of a sequence.")
+FIELD_OPTIONAL_ONEOFPR(Map, map_type, 5, type, "The type of a map.")
 FIELD_STR(
     denotation,
     6,
@@ -466,20 +500,18 @@ FIELD_STR(
     "semantic description as to what is stored inside. Refer to "
     "https://github.com/onnx/onnx/blob/main/docs/"
     "TypeDenotation.md#type-denotation-definition for pre-defined type denotations.")
-FIELD_OPTIONAL_ONEOF(SparseTensor, sparse_tensor_type, 8, type, "Type of the sparse tensor")
-FIELD_OPTIONAL_ONEOF(Optional, optional_type, 9, type, "The type of an optional.")
+FIELD_OPTIONAL_ONEOFPR(SparseTensor, sparse_tensor_type, 8, type, "Type of the sparse tensor")
+FIELD_OPTIONAL_ONEOFPR(Optional, optional_type, 9, type, "The type of an optional.")
 inline bool has_type() const {
   return has_tensor_type() || has_sequence_type() || has_map_type() || has_sparse_tensor_type() || has_optional_type();
 }
 END_PROTO()
 
-using TensorProto_DataType = TensorProto::DataType;
-
 // ValueInfoProto
 
 BEGIN_PROTO(ValueInfoProto, "Defines information on value, including the name, the type, and the shape of the value.")
 FIELD_STR(name, 1, "This field MUST be present in this version of the IR.")
-FIELD_OPTIONAL(
+FIELD_OPTIONALP(
     TypeProto,
     type,
     2,
@@ -498,7 +530,7 @@ BEGIN_PROTO_NOINIT(
     "tensor values, or repeated float, integer, string, graph, and tensor values. An "
     "AttributeProto MUST contain the name field, and *only one* of the following "
     "content fields, effectively enforcing a C/C++ union equivalent.")
-enum class AttributeType : int32_t {
+enum AttributeType : int32_t {
   UNDEFINED = 0,
   FLOAT = 1,
   INT = 2,
@@ -538,19 +570,19 @@ FIELD(
     "field was not defined, and implementations needed to use has_field heuristics to determine "
     "which value field was in use.  For IR_VERSION 0.0.2 or later, this field MUST be set and match "
     "the f|i|s|t|... field in use.  This change was made to accommodate proto3 implementations.")
-FIELD_OPTIONAL(float, f, 2, "Optional float attribute.")
-FIELD_OPTIONAL(int64_t, i, 3, "Optional int64 attribute.")
+FIELD_OPTIONALC(float, f, 2, "Optional float attribute.")
+FIELD_OPTIONALC(int64_t, i, 3, "Optional int64 attribute.")
 FIELD_STR(s, 4, "Optional string attribute.")
-FIELD_OPTIONAL(TensorProto, t, 5, "Optional tensor attribute.")
-FIELD_OPTIONAL(GraphProto, g, 6, "Optional graph attribute.")
-FIELD_OPTIONAL(SparseTensorProto, sparse_tensor, 22, "Optional sparse tensor attribute.")
+FIELD_OPTIONALPR(TensorProto, t, 5, "Optional tensor attribute.")
+FIELD_OPTIONALPR(GraphProto, g, 6, "Optional graph attribute.")
+FIELD_OPTIONALPR(SparseTensorProto, sparse_tensor, 22, "Optional sparse tensor attribute.")
 FIELD_REPEATED(float, floats, 7, "Optional repeated float attribute.")
 FIELD_REPEATED(int64_t, ints, 8, "Optional repeated int64 attribute.")
 FIELD_REPEATED(utils::String, strings, 9, "Optional repeated string attribute.")
 FIELD_REPEATED_PROTO(TensorProto, tensors, 10, "Optional repeated tensor attribute.")
 FIELD_REPEATED_PROTO(SparseTensorProto, sparse_tensors, 23, "Optional repeated tensor attribute.")
 FIELD_REPEATED_PROTO(GraphProto, graphs, 11, "Optional repeated graph attribute.")
-FIELD_OPTIONAL(TypeProto, tp, 14, "Type proto")
+FIELD_OPTIONALP(TypeProto, tp, 14, "Type proto")
 END_PROTO()
 
 // NodeProto
@@ -570,6 +602,9 @@ FIELD_STR(
     "of the IR.")
 FIELD_STR(op_type, 4, "The symbolic identifier of the Operator to execute.")
 FIELD_REPEATED_PROTO(AttributeProto, attribute, 5, "Attributes associated with this node.")
+inline const utils::RepeatedProtoField<AttributeProto>& attribute() const {
+  return attribute_;
+}
 FIELD_STR(domain, 7, "The domain of the OperatorSet that specifies the operator named by op_type.")
 FIELD_STR(overload, 8, "Overload identifier, used only to map this to a model-local function.")
 FIELD_STR(doc_string, 6, "A human-readable documentation for this node. Markdown is allowed.")
@@ -680,7 +715,7 @@ BEGIN_PROTO(
     "ModelProto is a top-level file/container format for bundling a ML model and "
     "associating its computation graph with metadata. The semantics of the model "
     "are described by the associated GraphProto's.")
-FIELD_OPTIONAL(
+FIELD_OPTIONALC(
     int64_t,
     ir_version,
     1,
@@ -709,9 +744,9 @@ FIELD_STR(
     "Domain name of the model. We use reverse domain names as name space indicators. For "
     "example: `company.name`. Together with `model_version` and GraphProto.name, this forms the "
     "unique identity of the graph.")
-FIELD_OPTIONAL(int64_t, model_version, 5, "The version of the graph encoded. See Version enum below.")
+FIELD_OPTIONALC(int64_t, model_version, 5, "The version of the graph encoded. See Version enum below.")
 FIELD_STR(doc_string, 6, "A human-readable documentation for this graph. Markdown is allowed.")
-FIELD_OPTIONAL(GraphProto, graph, 7, "The parameterized graph that is evaluated to execute the model.")
+FIELD_OPTIONALP(GraphProto, graph, 7, "The parameterized graph that is evaluated to execute the model.")
 FIELD_REPEATED(StringStringEntryProto, metadata_props, 14, "Named metadata values; keys should be distinct.")
 // FIELD_REPEATED(TrainingInfoProto, training_info, 20, ",not yet implemented")
 FIELD_REPEATED_PROTO(

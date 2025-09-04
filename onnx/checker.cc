@@ -62,7 +62,7 @@ void check_value_info(const ValueInfoProto& value_info, const CheckerContext& ct
       enforce_has_field(type, key_type);
       enforce_has_field(type, value_type);
     } break;
-#ifdef ONNX_ML
+#ifdef ONNX_ML_OPAQUE
     case TypeProto::kOpaqueType:
       break;
 #endif

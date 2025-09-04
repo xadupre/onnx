@@ -128,14 +128,20 @@
   inline const utils::RepeatedField<type>& name() const {       \
     return name##_;                                             \
   }                                                             \
+  inline const type& name(int i) const {                        \
+    return name##_[i];                                          \
+  }                                                             \
+  inline size_t name##_size() const {                           \
+    return name##_.size();                                      \
+  }                                                             \
   inline const utils::RepeatedField<type>* ptr_##name() const { \
     return &name##_;                                            \
   }                                                             \
   inline utils::RepeatedField<type>* mutable_##name() {         \
     return &name##_;                                            \
   }                                                             \
-  inline type& add_##name() {                                   \
-    return name##_.add();                                       \
+  inline type* add_##name() {                                   \
+    return &name##_.add();                                      \
   }                                                             \
   inline type& add_##name(type&& v) {                           \
     name##_.emplace_back(v);                                    \
@@ -148,6 +154,9 @@
     return order;                                               \
   }                                                             \
   inline void clr_##name() {                                    \
+    name##_.clear();                                            \
+  }                                                             \
+  inline void clear_##name() {                                  \
     name##_.clear();                                            \
   }                                                             \
   static inline constexpr const char* DOC_##name = doc;         \
@@ -188,6 +197,9 @@
   inline void clr_##name() {                                         \
     name##_.clear();                                                 \
   }                                                                  \
+  inline void clear_##name() {                                       \
+    name##_.clear();                                                 \
+  }                                                                  \
   static inline constexpr const char* DOC_##name = doc;              \
   static inline constexpr const char* _name_##name = #name;          \
   inline bool packed_##name() const {                                \
@@ -226,6 +238,9 @@
   inline void clr_##name() {                                    \
     name##_.clear();                                            \
   }                                                             \
+  inline void clear_##name() {                                  \
+    name##_.clear();                                            \
+  }                                                             \
   static inline constexpr const char* DOC_##name = doc;         \
   static inline constexpr const char* _name_##name = #name;     \
   inline bool packed_##name() const {                           \
@@ -243,10 +258,6 @@
     return *name##_;                                                                \
   }                                                                                 \
   inline const type& ref_##name() const {                                           \
-    EXT_ENFORCE(name##_.has_value(), "Optional field '", #name, "' has no value."); \
-    return *name##_;                                                                \
-  }                                                                                 \
-  inline const type& name() const {                                                 \
     EXT_ENFORCE(name##_.has_value(), "Optional field '", #name, "' has no value."); \
     return *name##_;                                                                \
   }                                                                                 \
@@ -284,16 +295,36 @@
   utils::OptionalField<type> name##_;                                               \
   using name##_t = type;
 
-#define FIELD_OPTIONAL(type, name, order, doc) \
-  _FIELD_OPTIONAL(type, name, order, doc)      \
-  inline bool has_oneof_##name() const {       \
-    return has_##name();                       \
+#define FIELD_OPTIONAL_(type, name, order, doc) \
+  _FIELD_OPTIONAL(type, name, order, doc)       \
+  inline bool has_oneof_##name() const {        \
+    return has_##name();                        \
+  }
+
+#define FIELD_OPTIONALC(type, name, order, doc) \
+  FIELD_OPTIONAL_(type, name, order, doc)       \
+  inline const type& name() const {             \
+    return ref_##name();                        \
+  }
+
+#define FIELD_OPTIONALP(type, name, order, doc) FIELD_OPTIONAL_(type, name, order, doc)
+
+#define FIELD_OPTIONALPR(type, name, order, doc) \
+  FIELD_OPTIONAL_(type, name, order, doc)        \
+  inline const type& name() const {              \
+    return ref_##name();                         \
   }
 
 #define FIELD_OPTIONAL_ONEOF(type, name, order, oneof, doc) \
   _FIELD_OPTIONAL(type, name, order, doc)                   \
   inline bool has_oneof_##name() const {                    \
     return has_##oneof();                                   \
+  }
+
+#define FIELD_OPTIONAL_ONEOFPR(type, name, order, oneof, doc) \
+  FIELD_OPTIONAL_ONEOF(type, name, order, oneof, doc)         \
+  inline const type& name() const {                           \
+    return ref_##name();                                      \
   }
 
 #define FIELD_OPTIONAL_ENUM(type, name, order, doc)                                      \
