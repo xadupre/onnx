@@ -86,7 +86,7 @@ class SymbolTableImpl : public SymbolTable {
     }
   }
 
-  void AddExistingSymbolicDims(const google::protobuf::RepeatedPtrField<ValueInfoProto>& protos) {
+  void AddExistingSymbolicDims(const ONNX_NAMESPACE::v2::utils::RepeatedProtoField<ValueInfoProto>& protos) {
     for (const auto& proto : protos) {
       AddExistingSymbolicDims(proto.type());
     }
@@ -146,7 +146,7 @@ struct InferenceContextImpl : public InferenceContext {
       GraphInferenceContext* graphInferenceContext = nullptr)
       : graphInferenceContext_{graphInferenceContext}, options_(options), node_(&n) {
     for (auto& attr : *n.mutable_attribute()) {
-      attributesByName_[attr.name()] = &attr;
+      attributesByName_[attr.name().as_string()] = &attr;
       if (attr.has_g()) {
         // need a mutable GraphProto to run inferencing on this attribute
         graphProtoAttributesByName_[attr.name()] = attr.mutable_g();

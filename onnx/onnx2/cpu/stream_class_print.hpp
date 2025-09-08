@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "onnx/onnx2/cpu/stream_class.h"
-
 #include <stdint.h>
 
 #include <cstddef>
@@ -19,6 +17,8 @@
 #include <tuple>
 #include <type_traits>
 #include <vector>
+
+#include "onnx/onnx2/cpu/stream_class.h"
 
 namespace ONNX_NAMESPACE {
 namespace v2 {
@@ -244,6 +244,18 @@ write_into_vector_string(utils::PrintOptions& options, const char* field_name, c
 template <>
 std::vector<std::string>
 write_into_vector_string(utils::PrintOptions& options, const char* field_name, const TensorProto::DataType& field) {
+  return {common_helpers::MakeString(field_name, ": ", write_as_string(options, static_cast<int32_t>(field)), ",")};
+}
+
+template <>
+std::vector<std::string>
+write_into_vector_string(utils::PrintOptions& options, const char* field_name, const SequenceProto::DataType& field) {
+  return {common_helpers::MakeString(field_name, ": ", write_as_string(options, static_cast<int32_t>(field)), ",")};
+}
+
+template <>
+std::vector<std::string>
+write_into_vector_string(utils::PrintOptions& options, const char* field_name, const OptionalProto::DataType& field) {
   return {common_helpers::MakeString(field_name, ": ", write_as_string(options, static_cast<int32_t>(field)), ",")};
 }
 

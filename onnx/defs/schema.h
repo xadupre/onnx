@@ -46,7 +46,7 @@ struct FunctionBodyBuildContextImpl : public FunctionBodyBuildContext {
   explicit FunctionBodyBuildContextImpl(const NodeProto& node_proto, const std::vector<TypeProto>& input_types = {})
       : node_proto_(node_proto), input_types_(input_types) {
     for (const AttributeProto& attr : node_proto.attribute()) {
-      attributesByName_[attr.name().as_string()] = &attr;
+      attributesByName_[attr.name()] = &attr;
     }
   }
 

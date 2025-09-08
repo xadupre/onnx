@@ -70,15 +70,15 @@ void PopulateExternalData(ModelProto& model, size_t threshold, const std::string
           !it->has_data_location() || it->ref_data_location() == TensorProto::DataLocation::DEFAULT,
           "External data should not be set already.");
       it->ref_data_location() = TensorProto::DataLocation::EXTERNAL;
-      StringStringEntryProto& loc = it->add_external_data();
-      loc.set_key("location");
-      loc.set_value(external_data_location);
-      StringStringEntryProto& off = it->add_external_data();
-      off.set_key("offset");
-      off.set_value(common_helpers::MakeString(offset));
-      StringStringEntryProto& size = it->add_external_data();
-      size.set_key("length");
-      size.set_value(std::to_string(it->ref_raw_data().size()));
+      StringStringEntryProto* loc = it->add_external_data();
+      loc->set_key("location");
+      loc->set_value(external_data_location);
+      StringStringEntryProto* off = it->add_external_data();
+      off->set_key("offset");
+      off->set_value(common_helpers::MakeString(offset));
+      StringStringEntryProto* size = it->add_external_data();
+      size->set_key("length");
+      size->set_value(std::to_string(it->ref_raw_data().size()));
       offset += it->ref_raw_data().size();
     }
   }

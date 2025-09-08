@@ -18,8 +18,8 @@
 
 #define SERIALIZATION_METHOD()                                                               \
   uint64_t SerializeSize() const;                                                            \
-  void ParseFromString(const std::string& raw);                                              \
-  void ParseFromString(const std::string& raw, ParseOptions& opts);                          \
+  bool ParseFromString(const std::string& raw);                                              \
+  bool ParseFromString(const std::string& raw, ParseOptions& opts);                          \
   void SerializeToString(std::string& out) const;                                            \
   void SerializeToString(std::string& out, SerializeOptions& opts) const;                    \
   uint64_t SerializeSize(utils::BinaryWriteStream& stream, SerializeOptions& opts) const;    \
@@ -108,6 +108,12 @@
   type name##_ = default_value;                              \
   using name##_t = type;
 
+#define FIELD_DEFAULTC(type, name, order, default_value, doc) \
+  FIELD_DEFAULT(type, name, order, default_value, doc)        \
+  inline const type& name() const {                           \
+    return name##_;                                           \
+  }
+
 #define FIELD_STR(name, order, doc)                   \
   FIELD(utils::String, name, order, doc)              \
   inline void set_##name(const std::string& v) {      \
@@ -172,6 +178,9 @@
   inline utils::RepeatedProtoField<type>& ref_##name() {             \
     return name##_;                                                  \
   }                                                                  \
+  inline const utils::RepeatedProtoField<type>& name() const {       \
+    return name##_;                                                  \
+  }                                                                  \
   inline const utils::RepeatedProtoField<type>& ref_##name() const { \
     return name##_;                                                  \
   }                                                                  \
@@ -200,6 +209,9 @@
   inline void clear_##name() {                                       \
     name##_.clear();                                                 \
   }                                                                  \
+  inline int name##_size() const {                                   \
+    return static_cast<int>(name##_.size());                         \
+  }                                                                  \
   static inline constexpr const char* DOC_##name = doc;              \
   static inline constexpr const char* _name_##name = #name;          \
   inline bool packed_##name() const {                                \
@@ -214,6 +226,9 @@
     return name##_;                                             \
   }                                                             \
   inline const utils::RepeatedField<type>& ref_##name() const { \
+    return name##_;                                             \
+  }                                                             \
+  inline const utils::RepeatedField<type>& name() const {       \
     return name##_;                                             \
   }                                                             \
   inline const utils::RepeatedField<type>* ptr_##name() const { \
@@ -339,6 +354,10 @@
     EXT_ENFORCE(name##_.has_value(), "Optional enum field '", #name, "' has no value."); \
     return *name##_;                                                                     \
   }                                                                                      \
+  inline const type& name() const {                                                      \
+    EXT_ENFORCE(name##_.has_value(), "Optional enum field '", #name, "' has no value."); \
+    return *name##_;                                                                     \
+  }                                                                                      \
   inline const type* ptr_##name() const {                                                \
     return has_##name() ? &(*name##_) : static_cast<type*>(nullptr);                     \
   }                                                                                      \
@@ -358,6 +377,9 @@
   }                                                                                      \
   inline void set_##name(const type& v) {                                                \
     name##_ = v;                                                                         \
+  }                                                                                      \
+  inline void set_##name(const int32_t v) {                                              \
+    name##_ = static_cast<type>(v);                                                      \
   }                                                                                      \
   inline void reset_##name() {                                                           \
     name##_.reset();                                                                     \

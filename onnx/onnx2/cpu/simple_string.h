@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstring>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -47,6 +48,9 @@ class RefString {
   inline char operator[](size_t i) const {
     return ptr_[i];
   }
+  inline operator std::string() const {
+    return as_string();
+  }
   bool operator==(const RefString& other) const;
   bool operator==(const String& other) const;
   bool operator==(const std::string& other) const;
@@ -57,6 +61,19 @@ class RefString {
   bool operator!=(const char* other) const;
   std::string as_string(bool quote = false) const;
   int64_t toint64() const;
+
+  friend inline std::string operator+(const RefString& lhs, std::string rhs) {
+    return lhs.as_string() + rhs;
+  }
+
+  friend inline std::string operator+(std::string lhs, const RefString& rhs) {
+    return lhs + rhs.as_string();
+  }
+
+  friend inline std::stringstream& operator<<(std::stringstream& lhs, const RefString& rhs) {
+    lhs << rhs.as_string();
+    return lhs;
+  }
 };
 
 class String {
@@ -107,6 +124,9 @@ class String {
   inline char operator[](size_t i) const {
     return ptr_[i];
   }
+  inline operator std::string() const {
+    return as_string();
+  }
   String& operator=(const char* s);
   String& operator=(const RefString& s);
   String& operator=(const String& s);
@@ -122,6 +142,19 @@ class String {
   std::string as_string(bool quote = false) const;
   inline int64_t toint64() const {
     return RefString(ptr_, size_).toint64();
+  }
+
+  friend inline std::string operator+(const String& lhs, std::string rhs) {
+    return lhs.as_string() + rhs;
+  }
+
+  friend inline std::string operator+(std::string lhs, const String& rhs) {
+    return lhs + rhs.as_string();
+  }
+
+  friend inline std::stringstream& operator<<(std::stringstream& lhs, const String& rhs) {
+    lhs << rhs.as_string();
+    return lhs;
   }
 
  private:

@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include "onnx/onnx2/cpu/stream_class.h"
-
 #include <string>
 
+#include "onnx/onnx2/cpu/stream_class.h"
 #include "onnx/onnx2/cpu/stream_class_print.hpp"
 #include "onnx/onnx2/cpu/stream_class_read.hpp"
 #include "onnx/onnx2/cpu/stream_class_size.hpp"
@@ -29,11 +28,11 @@
   uint64_t cls::SerializeSize() const {                                         \
     return _SerializeSize(*this);                                               \
   }                                                                             \
-  void cls::ParseFromString(const std::string& raw) {                           \
-    _ParseFromString(*this, raw);                                               \
+  bool cls::ParseFromString(const std::string& raw) {                           \
+    return _ParseFromString(*this, raw);                                        \
   }                                                                             \
-  void cls::ParseFromString(const std::string& raw, ParseOptions& opts) {       \
-    _ParseFromString(*this, raw, opts);                                         \
+  bool cls::ParseFromString(const std::string& raw, ParseOptions& opts) {       \
+    return _ParseFromString(*this, raw, opts);                                  \
   }                                                                             \
   void cls::SerializeToString(std::string& out) const {                         \
     _SerializeToString(*this, out);                                             \
@@ -197,20 +196,21 @@ uint64_t _SerializeSize(cls& self) {
 }
 
 template <typename cls>
-void _ParseFromString(cls& self, const std::string& raw) {
+bool _ParseFromString(cls& self, const std::string& raw) {
   ParseOptions opts;
-  self.ParseFromString(raw, opts);
+  return self.ParseFromString(raw, opts);
 }
 
 template <typename cls>
-void _ParseFromString(cls& self, const std::string& raw, ParseOptions& opts) {
+bool _ParseFromString(cls& self, const std::string& raw, ParseOptions& opts) {
   const uint8_t* ptr = reinterpret_cast<const uint8_t*>(raw.data());
   utils::StringStream st(ptr, raw.size());
   if (opts.parallel)
     st.StartThreadPool(opts.num_threads);
-  self.ParseFromStream(st, opts);
+  bool r=self.ParseFromStream(st, opts);
   if (opts.parallel)
     st.WaitForDelayedBlock();
+  return r;
 }
 
 template <typename cls>

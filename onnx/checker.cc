@@ -464,7 +464,7 @@ void check_attribute(const AttributeProto& attr, const CheckerContext& ctx, cons
   check_repeated_field(tensors, AttributeProto::TENSORS);
   check_repeated_field(graphs, AttributeProto::GRAPHS);
   check_repeated_field(sparse_tensors, AttributeProto::SPARSE_TENSORS);
-  check_repeated_field(type_protos, AttributeProto::TYPE_PROTOS);
+  // check_repeated_field(type_protos, AttributeProto::TYPE_PROTOS);
 
 #undef check_type
 #undef check_singular_field

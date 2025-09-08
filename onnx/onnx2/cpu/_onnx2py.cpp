@@ -156,13 +156,15 @@ void pyadd_proto_serialization(py::class_<cls, Message>& name_inst) {
   name_inst
       .def(
           "ParseFromString",
-          [](cls& self, py::bytes data, py::object options) {
+          [](cls& self, py::bytes data, py::object options) ->bool {
             std::string raw = data.cast<std::string>();
+            bool r;
             if (py::isinstance<ParseOptions&>(options)) {
-              self.ParseFromString(raw, options.cast<ParseOptions&>());
+              r=self.ParseFromString(raw, options.cast<ParseOptions&>());
             } else {
-              self.ParseFromString(raw);
+              r=self.ParseFromString(raw);
             }
+            return r;
           },
           py::arg("data"),
           py::arg("options") = py::none(),

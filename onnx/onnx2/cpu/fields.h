@@ -99,6 +99,9 @@ class RepeatedField {
   inline bool empty() const {
     return values_.empty();
   }
+  inline const T* data() const {
+    return values_.data();
+  }
   inline size_t size() const {
     return values_.size();
   }

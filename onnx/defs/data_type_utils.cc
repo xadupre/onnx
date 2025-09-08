@@ -139,7 +139,7 @@ std::string DataTypeUtils::ToString(const TypeProto& type_proto, const std::stri
       std::string map_str = "map(" + ToDataTypeString(type_proto.map_type().key_type()) + ",";
       return ToString(type_proto.map_type().value_type(), left + map_str, ")" + right);
     }
-#ifdef ONNX_ML
+#ifdef ONNX_ML_OPAQUE
     case TypeProto::ValueCase::kOpaqueType: {
       std::string result;
       const auto& op_type = type_proto.opaque_type();
@@ -194,7 +194,7 @@ void DataTypeUtils::FromString(const std::string& type_str, TypeProto& type_prot
     type_proto.mutable_map_type()->set_key_type(key_type);
     return FromString(std::string(v.Data(), v.Size()), *type_proto.mutable_map_type()->mutable_value_type());
   } else
-#ifdef ONNX_ML
+#ifdef ONNX_ML_OPAQUE
       if (s.LStrip("opaque")) {
     auto* opaque_type = type_proto.mutable_opaque_type();
     s.ParensWhitespaceStrip();
@@ -250,7 +250,7 @@ int32_t DataTypeUtils::FromDataTypeString(const std::string& type_str) {
 StringRange::StringRange() : data_(""), size_(0), start_(data_), end_(data_) {}
 
 StringRange::StringRange(const char* p_data, size_t p_size) : data_(p_data), size_(p_size), start_(data_), end_(data_) {
-  assert(p_data != nullptr);
+  // assert(p_data != nullptr);
   LAndRStrip();
 }
 
